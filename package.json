@@ -1,0 +1,25 @@
+{
+  "name": "accounting",
+  "version": "1.0.0",
+  "description": "a system that will notsify users via rest api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "express": "^4.17.2",
+    "fs": "0.0.1-security",
+    "joi": "^17.6.0",
+    "moment": "^2.29.1",
+    "read-excel-file": "^5.2.26",
+    "rtl-arabic": "^1.0.6",
+    "sheetjs": "^2.0.0",
+    "twilio": "^3.73.1",
+    "utf8": "^3.0.0",
+    "xlsx": "^0.17.5"
+  }
+}
