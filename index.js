@@ -16,44 +16,67 @@ app.use(cors());
 app.get("/test", (req, res) => res.json({ msg: "Hello World" }));
 //app.use(express.static("centra-client/build"));
 
-function readData(sheetName) {
-  var wb = xlsx.readFile(sheetName, { cellStyles: true });
+function getIDListLabour(sheetValue) {
 
-  var sheetValue = wb.Sheets[wb.SheetNames[0]];
-  //console.log(sheetValue);
   const cells = Object.entries(sheetValue).filter(
     ([cell]) => !cell.startsWith("!")
   );
 
   const coloredCells = cells.filter(([cell, value]) => {
-    if (cell.startsWith("J") && value.s.fgColor != undefined && value.s.fgColor.rgb!=undefined ) { //If The Cell Is Colored
+    if (
+      cell.startsWith("J") &&
+      value.s.fgColor != undefined &&
+      value.s.fgColor.rgb != undefined
+    ) {
+      //If The Cell Is Colored at Col J
       //console.log(cell,value.s.fgColor.rgb)
       return value.s && value.s.bgColor;
     }
   });
- 
-  for (const [cell, value] of coloredCells) {
-    console.log(cell, value.w);
-    var row = cell.substring(1)
-    try {
-      xlsx.utils.sheet_add_aoa(sheetValue, [['NEW VALUE from NODE']], {origin: 'AI16'});
-    } catch (err1) {
-      console.log(err1)
-      
+
+  var ammends = [];
+  const coloredCellsAmmends = cells.filter(([cell, value]) => {
+    if (
+      cell.startsWith("E") &&
+      value.s.fgColor != undefined &&
+      value.s.fgColor.rgb != undefined
+    ) {
+      //If The Cell Is Colored at Col E
+      //console.log(cell,value.s.fgColor.rgb)
+      var row = cell.substring(1);
+      ammends.push(parseInt(sheetValue["B" + row].w));
+      return value.s && value.s.bgColor;
     }
-    
+  });
+
+  //console.log("To Be Removed", ammends);
+  var perItemPay = [];
+  for (const [cell, value] of coloredCells) {
+    var row = cell.substring(1);
+    var user_id = parseInt(sheetValue["B" + row].w);
+    if (!ammends.includes(user_id)) {
+      perItemPay.push(user_id);
+    }
+    //console.log(cell, value.w,sheetValue["A"+row].w);
   }
+  return perItemPay;
+}
+
+function readData(sheetName) {
+  var wb = xlsx.readFile(sheetName, { cellStyles: true });
+
+  var sheetValue = wb.Sheets[wb.SheetNames[0]];
+  //console.log(sheetValue);
+  const filterIDs = getIDListLabour(sheetValue);
+  console.log(filterIDs)
   //xlsx.writeFile(wb, sheetName);
   var excelData = xlsx.utils.sheet_to_json(sheetValue, {
     header: "A",
     defval: 0,
   });
-  //console.log(excelData)
-  //Arabic Text at C D E AA
-  //Col header at row [2] and [3]
+  
   var title = excelData[0].A;
-  return { title, excelData };
-  console.log(title);
+  return { title, excelData ,filterIDs};
 }
 
 function getById(excelData, id) {
@@ -71,14 +94,14 @@ function getById(excelData, id) {
 
 function checkDataIntegrity(excelData) {}
 //Testing
-const { title, excelData } = readData("data2.xlsx");
-
+const { title, excelData ,filterIDs} = readData("data2.xlsx");
 checkDataIntegrity(excelData);
 const messageList = require("./twilo");
 //messageList.test();
-//messageList.sendMessage(getById(excelData,6), title);
+//console.log(getById(excelData,16))
+messageList.sendMessage(getById(excelData,16), title,filterIDs);
 
-app.get("/excel/:id", (req, res) => {
+app.get("/excel/:id", (req, res,) => {
   return res.json({ Result: getById(req.params.id) });
 });
 
