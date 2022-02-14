@@ -9,6 +9,7 @@ const fs = require("fs");
 const rtlArabic = require("rtl-arabic");
 var xlsx = require("xlsx");
 //app.use(express.static("centra-client/src/media"));
+const messageList = require("./twilo");
 
 app.use(express.json());
 app.use(cors());
@@ -17,7 +18,6 @@ app.get("/test", (req, res) => res.json({ msg: "Hello World" }));
 //app.use(express.static("centra-client/build"));
 
 function getIDListLabour(sheetValue) {
-
   const cells = Object.entries(sheetValue).filter(
     ([cell]) => !cell.startsWith("!")
   );
@@ -68,15 +68,15 @@ function readData(sheetName) {
   var sheetValue = wb.Sheets[wb.SheetNames[0]];
   //console.log(sheetValue);
   const filterIDs = getIDListLabour(sheetValue);
-  console.log(filterIDs)
+  console.log(filterIDs);
   //xlsx.writeFile(wb, sheetName);
   var excelData = xlsx.utils.sheet_to_json(sheetValue, {
     header: "A",
     defval: 0,
   });
-  
+
   var title = excelData[0].A;
-  return { title, excelData ,filterIDs};
+  return { title, excelData, filterIDs };
 }
 
 function getById(excelData, id) {
@@ -92,17 +92,31 @@ function getById(excelData, id) {
   }
 }
 
-function checkDataIntegrity(excelData) {}
 //Testing
-const { title, excelData ,filterIDs} = readData("data2.xlsx");
-checkDataIntegrity(excelData);
-const messageList = require("./twilo");
+const { title, excelData, filterIDs } = readData("data2.xlsx");
+
 //messageList.test();
 //console.log(getById(excelData,16))
-messageList.sendMessage(getById(excelData,16), title,filterIDs);
+//messageList.sendMessage(getById(excelData,16), title,filterIDs);
 
-app.get("/excel/:id", (req, res,) => {
-  return res.json({ Result: getById(req.params.id) });
+app.get("/:id1/:id2", (req, res) => {
+  if (req.params.id2 == 0) {
+    return res.json({ Result: getById(excelData, req.params.id1) });
+  } else {
+    var result = [];
+    try {
+      console.log(req.params.id1, req.params.id2);
+      const id1 = parseInt(req.params.id1);
+      const id2 = parseInt(req.params.id2);
+      for (var i = id1; i < id2; i++) {
+        console.log(i);
+        result.push(getById(excelData, i));
+      }
+      return res.json({ Result: result });
+    } catch (error) {
+      return res.json({ Error: "Error While compiling sheet" });
+    }
+  }
 });
 
 app.get("*", (req, res) => {

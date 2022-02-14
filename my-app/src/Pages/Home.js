@@ -1,17 +1,16 @@
 import React, { Component } from "react";
-
-
-class Page extends Component {
+import axios  from "axios";
+class Home extends Component {
   state = { width: -1, height: -1, slideIndex: 1, slides: [], dots: [] };
 
   render() {
     //Desktop Version
     return (
-      <div className="">
-        Hello
+      <div>
+        Homepage
       </div>
     );
   }
 }
 
-export default Page;
+export default Home;
