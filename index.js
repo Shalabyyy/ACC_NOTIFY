@@ -10,6 +10,8 @@ const rtlArabic = require("rtl-arabic");
 var xlsx = require("xlsx");
 //app.use(express.static("centra-client/src/media"));
 const messageList = require("./twilo");
+const twilio = require("twilio");
+const { json } = require("express/lib/response");
 
 app.use(express.json());
 app.use(cors());
@@ -93,7 +95,7 @@ function getById(excelData, id) {
 }
 
 //Testing
-const { title, excelData, filterIDs } = readData("data2.xlsx");
+const { title, excelData, filterIDs } = readData("data3_phone.xlsx");
 
 //messageList.test();
 //console.log(getById(excelData,16))
@@ -119,11 +121,38 @@ app.get("/:id1/:id2", (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  var result = [];
+  try {
+    console.log(req.params.id1, req.params.id2);
+
+    for (var i = 0; i < excelData.length; i++) {
+      var fetch = getById(excelData, i);
+      console.log(fetch);
+      if (fetch != null && Number.isInteger(fetch.A) && fetch.A != 0) {
+        console.log(i);
+        result.push(getById(excelData, i));
+      }
+    }
+    return res.json({ Result: result });
+  } catch (error) {
+    console.log(error);
+    return res.json({ Error: "Error While compiling sheet" });
+  }
+});
+
+app.post("/ping", (req, res) => {
+  const phone = req.body.phone;
+  if (phone == null) return res.json({ Error: "Error Pinging" });
+  var result = messageList.testMessage(phone);
+  console.log("Result",result)
+  return res.json({result:result})
+});
 app.get("*", (req, res) => {
   //res.sendFile(path.resolve(__dirname, "centra-client", "build", "index.html"));
 });
 
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 1;
 
 app.listen(process.env.PORT || 4000, () =>
   console.log(`App listening on port ${process.env.PORT || 4000}`)
