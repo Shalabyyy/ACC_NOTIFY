@@ -19,6 +19,11 @@ app.use(cors());
 app.get("/test", (req, res) => res.json({ msg: "Hello World" }));
 //app.use(express.static("centra-client/build"));
 
+const sms = require("twilio")(
+  "AC1cab7872c096bcec0f9c0776dfb6feb7",
+  "69c446d05f472b28f6735007e67a0c59"
+);
+
 function getIDListLabour(sheetValue) {
   const cells = Object.entries(sheetValue).filter(
     ([cell]) => !cell.startsWith("!")
@@ -144,10 +149,24 @@ app.get("/", (req, res) => {
 app.post("/ping", (req, res) => {
   const phone = req.body.phone;
   if (phone == null) return res.json({ Error: "Error Pinging" });
-  var result = messageList.testMessage(phone);
-  console.log("Result",result)
-  return res.json({result:result})
+
+  console.log("Test Message");
+  var result = sms.messages
+    .create({
+      body: "هذه رسالة اختبار",
+      from: "+12058966985",
+      to: phone,
+    })
+    .then((message) => {
+      console.log(message);
+      return res.json({ Message: message });
+    })
+    .catch((err) => {
+      console.log(err.code);
+      return res.json({ Error: err });
+    });
 });
+
 app.get("*", (req, res) => {
   //res.sendFile(path.resolve(__dirname, "centra-client", "build", "index.html"));
 });

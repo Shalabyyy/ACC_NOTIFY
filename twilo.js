@@ -2,7 +2,7 @@
 //const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(
   "AC1cab7872c096bcec0f9c0776dfb6feb7",
-  "5896613c846971378f6e19bf4d411fea"
+  "69c446d05f472b28f6735007e67a0c59"
 );
 
 function round2dp(number) {
@@ -86,8 +86,7 @@ function sendMessage(details, title, labourID) {
 }
 function testMessage(phone) {
   console.log("Test Message");
-  var result;
-  client.messages
+  var result = client.messages
     .create({
       body: "هذه رسالة اختبار",
       from: "+12058966985",
@@ -95,14 +94,17 @@ function testMessage(phone) {
     })
     .then((message) => {
       console.log(message);
-      result = message;
+      return message;
     })
     .catch((err) => {
       console.log(err.code);
-      result = err;
+      return err;
     });
-    console.log("Twilo Result",result)
-  return result;
+  
+  var finale = result.then(res => { 
+    console.log("The Final Result is", res.moreInfo)
+  })
+  return finale;
 }
 //21608 -> The number  is unverified
 //20003 -> Autehtication Token Error
